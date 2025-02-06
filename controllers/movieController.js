@@ -6,7 +6,14 @@ const index = (req, res) => {
 
     connection.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: 'Query al database fallita' })
-        res.json(results)
+
+        const movie = results.map(movie => {
+            return ({
+                ...movie,
+                image: req.imagePath + movie.image
+            })
+        })
+        res.json(movie)
     })
 }
 
@@ -22,8 +29,10 @@ const show = (req, res) => {
             return res.status(404).json({ error: 'film non trovato' })
         }
 
-        const movie = results[0]
-        res.json(movie)
+        res.json({
+            ...results[0],
+            image: req.imagePath + results[0].image
+        })
     })
 }
 
