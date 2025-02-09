@@ -19,8 +19,9 @@ const index = (req, res) => {
 
 const show = (req, res) => {
     const id = req.params.id
-    const sql = `SELECT *
+    const sql = `SELECT M.*, R.id reviews_id,R.vote, R.text
     FROM movies M
+    LEFT JOIN reviews R ON M.id = R.movie_id
     WHERE M.id = ?`
 
     connection.query(sql, [id], (err, results) => {
@@ -29,10 +30,19 @@ const show = (req, res) => {
             return res.status(404).json({ error: 'film non trovato' })
         }
 
-        res.json({
-            ...results[0],
-            image: req.imagePath + results[0].image
-        })
+        let { text, vote, reviews_id, ...movieData } = results[0];
+
+        let movie = {
+            ...movieData,
+            image: req.imagePath + results[0].image,
+            reviews: results[0].reviews_id ? results.map(item => ({
+                id: item.reviews_id,
+                vote: item.vote,
+                text: item.text
+            })) : []
+        }
+
+        res.json(movie)
     })
 }
 
